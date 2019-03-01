@@ -67,7 +67,7 @@ BSTree.prototype.insert = function (val) {
         this.root.shiftY = 0;
         flash(this.root.element);
     } else {
-        this.root.insert(val, 2);
+        this.root.insert(val);
     }
 };
 
@@ -149,8 +149,7 @@ function Entry(val, parent) {
     this.shiftY = null;
 }
 
-Entry.prototype.insert = function (val, counter) {
-    counter++;
+Entry.prototype.insert = function (val) {
     if (val < this.val) {
         if (this.left === null) {
             this.left = new Entry(val, this);
@@ -159,7 +158,7 @@ Entry.prototype.insert = function (val, counter) {
             this.left.element = drawElement(this.left, this.left.shiftX, this.left.shiftY);
             flash(this.left.element);
         } else {
-            this.left.insert(val, counter);
+            this.left.insert(val);
         }
     } else {
         if (this.right === null) {
@@ -169,7 +168,7 @@ Entry.prototype.insert = function (val, counter) {
             this.right.element = drawElement(this.right, this.right.shiftX, this.right.shiftY);
             flash(this.right.element);
         } else {
-            this.right.insert(val, counter);
+            this.right.insert(val);
         }
     }
 };
