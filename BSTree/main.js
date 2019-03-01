@@ -15,8 +15,6 @@ function drawElement (e, shiftX, shiftY) {
     newNode.setAttribute("class", "node");
     newNode.style.top = 50 + resultShiftY + 'px';
     newNode.style.left = 200 + resultShiftX + 'px';
-    console.log(resultShiftX);
-    console.log(resultShiftY);
     newNode.innerText = e.val;
     document.getElementById("mainField").appendChild(newNode);
     return newNode;
@@ -238,6 +236,7 @@ Entry.prototype.remove = function (val, flashFlag) {
 
 Entry.prototype.find = function (val) {
     if (this.val === val) {
+        flash(this.element);
         return this;
     }
     if (val < this.val) {
@@ -302,6 +301,21 @@ var tree;
     document.getElementById('removeValue').addEventListener('keyup', function (e) {
         if (e.keyCode === 13) {
             remove();
+        }
+    });
+
+    function find () {
+        var input = document.getElementById('findValue');
+        if (input.value === '') {
+            return;
+        }
+        tree.find(parseInt(input.value));
+        input.value = '';
+    }
+    document.getElementById('findButton').addEventListener('click', remove);
+    document.getElementById('findValue').addEventListener('keyup', function (e) {
+        if (e.keyCode === 13) {
+            find();
         }
     });
 
