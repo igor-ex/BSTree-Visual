@@ -216,6 +216,17 @@ Entry.prototype.getMin = function () {
     return this.left.getMin();
 };
 
-var a = new BSTree;
-a.insert(1);
-a.insert(2);
+;(function () {
+    var tree = new BSTree;
+    document.getElementById('inputButton').addEventListener('click', function (e) {
+        var input = document.getElementById('inputValue');
+        tree.insert(input.value);
+        input.value = '';
+    });
+
+    document.getElementById('removeButton').addEventListener('click', function (e) {
+        var input = document.getElementById('removeValue');
+        tree.remove(input.value);
+        input.value = '';
+    })
+}());
