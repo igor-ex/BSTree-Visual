@@ -93,3 +93,7 @@ button {
     left: 50%;
     top: 50px;
 }
+
+.red {
+    background: red;
+}

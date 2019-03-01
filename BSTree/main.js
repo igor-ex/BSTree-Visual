@@ -1,20 +1,60 @@
-function drawElement (e, coords, counter) {
-    var el = document.createElement('div');
-    el.classList.add('node');
-    el.innerText = e.val;
-    el.style.top = 50 * counter + 'px';
-    var cont = document.getElementById('mainField');
-    cont.appendChild(el);
-    return el;
+// function drawElement (e, coords, counter) {
+//     var el = document.createElement('div');
+//     el.classList.add('node');
+//     el.innerText = e.val;
+//     el.style.top = 50 * counter + 'px';
+//     var cont = document.getElementById('mainField');
+//     cont.appendChild(el);
+//     return el;
+// }
+
+function drawElement (e, shiftX, shiftY) {
+    let resultShiftX = 50 * shiftX;
+    let resultShiftY = 50 * shiftY;
+    let newNode = document.createElement("div");
+    newNode.setAttribute("class", "node");
+    newNode.style.top = 50 + resultShiftY + 'px';
+    newNode.style.left = 200 + resultShiftX + 'px';
+    console.log(resultShiftX);
+    console.log(resultShiftY);
+    newNode.innerText = e.val;
+    document.getElementById("mainField").appendChild(newNode);
+    return newNode;
 }
-function redrawElement () {}
-function getCoords () {}
-function redrawRecursively () {}
-function flash () {}
+
+function redrawElement (element, shiftX, shiftY) {
+    let resultShiftX = 50 * shiftX;
+    let resultShiftY = 50 * shiftY;
+    element.style.top = 50 + resultShiftY + 'px';
+    element.style.left = 200 + resultShiftX + 'px';
+}
+
+function redrawRecursively (e, shiftX, shiftY) {
+    e.shiftX = shiftX;
+    e.shiftY = shiftY;
+    redrawElement(e.element, e.shiftX, e.shiftY);
+    if (e.left !== null) {
+        redrawRecursively(e.left, e.shiftX - 1, e.shiftY + 1);
+    }
+    if (e.right !== null) {
+        redrawRecursively(e.right, e.shiftX + 1, e.shiftY + 1);
+    }
+}
+
+function flash (e,  callback) {
+    e.classList.add('red');
+    setTimeout(function () {
+        e.classList.remove('red');
+        arguments.length > 1 && typeof callback === 'function' ? callback() : void 0;
+    }, 2000);
+}
+
 function eraseElement (el) {
     el.remove();
 }
-function eraseTree () {}
+function eraseTree () {
+    document.getElementById("mainField").innerHTML = '';
+}
 
 function BSTree() {
     this.root = null;
@@ -24,7 +64,9 @@ BSTree.prototype.insert = function (val) {
     if (this.root === null) {
         this.root = new Entry(val, null);
         var coords = void 0; //найти координаты
-        this.root.element = drawElement(this.root, coords, 1);
+        this.root.element = drawElement(this.root, 0, 0);
+        this.root.shiftX = 0;
+        this.root.shiftY = 0;
         flash(this.root.element);
     } else {
         this.root.insert(val, 2);
@@ -114,16 +156,20 @@ Entry.prototype.insert = function (val, counter) {
     if (val < this.val) {
         if (this.left === null) {
             this.left = new Entry(val, this);
-            this.left.element = drawElement(this.left, getCoords(this, 'left'), counter);
-            flash(this.element);
+            this.left.shiftX = this.shiftX - 1;
+            this.left.shiftY = this.shiftY + 1;
+            this.left.element = drawElement(this.left, this.left.shiftX, this.left.shiftY);
+            flash(this.left.element);
         } else {
             this.left.insert(val, counter);
         }
     } else {
         if (this.right === null) {
             this.right = new Entry(val, this);
-            this.right.element = drawElement(this.right, getCoords(this, 'right'), counter);
-            flash(this.element);
+            this.right.shiftX = this.shiftX + 1;
+            this.right.shiftY = this.shiftY + 1;
+            this.right.element = drawElement(this.right, this.right.shiftX, this.right.shiftY);
+            flash(this.right.element);
         } else {
             this.right.insert(val, counter);
         }
@@ -147,13 +193,19 @@ Entry.prototype.remove = function (val, flashFlag) {
         }
     } else if(this.left !== null && this.right !== null) {
         if (flashFlag) {
-            flash(this);
+            flash(this.element, function () {
+                eraseElement(this.element);
+            });
+        } else {
+            eraseElement(this.element);
         }
-        eraseElement(this.element);
+
         const newThis = this.right.getMin();
         newThis.right = this.right.remove(newThis.val);
         //придумать откуда взять координаты, от родителя или сохраненные для this
-        newThis.element = drawElement(newThis, getCoords(this.parent, void 0));
+        newThis.shiftX = this.shiftX;
+        newThis.shiftY = this.shiftY;
+        newThis.element = drawElement(newThis, this.shiftX, this.shiftY);
         if (newThis.right !== null) {
             newThis.right.parent = newThis;
         }
@@ -162,16 +214,20 @@ Entry.prototype.remove = function (val, flashFlag) {
             newThis.left.parent = newThis;
         }
         return newThis;
+
     } else {
         if (flashFlag) {
-            flash(this);
+                flash(this.element, function () {
+                    eraseElement(this.element);
+                });
+        } else {
+            eraseElement(this.element);
         }
-        eraseElement(this.element);
         if (this.left !== null) {
-            redrawRecursively(this.left, getCoords(this, 'left'));
+            redrawRecursively(this.left, this.shiftX, this.shiftY);
             return this.left;
         } else if (this.right !== null) {
-            redrawRecursively(this.right, getCoords(this, 'right'));
+            redrawRecursively(this.right, this.shiftX, this.shiftY);
             return this.right;
         } else {
             return null;
@@ -216,17 +272,37 @@ Entry.prototype.getMin = function () {
     return this.left.getMin();
 };
 
+var tree;
 ;(function () {
-    var tree = new BSTree;
-    document.getElementById('inputButton').addEventListener('click', function (e) {
+    tree = new BSTree;
+    function insert() {
         var input = document.getElementById('inputValue');
-        tree.insert(input.value);
+        if (input.value === '') {
+            return;
+        }
+        tree.insert(parseInt(input.value));
         input.value = '';
+    }
+    document.getElementById('inputButton').addEventListener('click', insert);
+    document.getElementById('inputValue').addEventListener('keyup', function (e) {
+        if (e.keyCode === 13) {
+            insert();
+        }
     });
 
-    document.getElementById('removeButton').addEventListener('click', function (e) {
+    function remove () {
         var input = document.getElementById('removeValue');
-        tree.remove(input.value);
+        if (input.value === '') {
+            return;
+        }
+        tree.remove(parseInt(input.value));
         input.value = '';
-    })
+    }
+    document.getElementById('removeButton').addEventListener('click', remove);
+    document.getElementById('removeValue').addEventListener('keyup', function (e) {
+        if (e.keyCode === 13) {
+            remove();
+        }
+    });
+
 }());
