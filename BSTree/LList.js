@@ -7,7 +7,7 @@ var LList;
         this.root = null;
         this.last = null;
         this.length = 0;
-    }
+    };
 
     function Entry(val) {
         this.val = val;

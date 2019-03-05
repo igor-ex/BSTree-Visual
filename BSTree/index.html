@@ -6,31 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>BS Tree</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="row">
-    <div class="container">
-    <div id="mainField" class="mainField">
-    
 
-    </div>
-    <div id="rightPanel" class="rightPanel">
-    <div class="container">
-    <input type="text" id='inputValue' class="inputText" autofocus>
-    <button class="button" id="inputButton">Input</button>
-    </div>
-    <div class="container">
-    <input type="text" id='removeValue' class="inputText">
-    <button class="button" id="removeButton">Remove</button>
-    </div>
-    <div class="container">
-    <input type="text" id='findValue' class="inputText">
-    <button class="button" id="findButton">Find</button>
-    </div>
-    </div>
-    </div>
-</div>
-<script src="main.js"></script>
+<body>
+        <div class="binary-tree">
+            <div id="mainField" class="binary-tree__main-field">
+            </div>
+            <div class="binary-tree__right-panel">
+                <div class="right-panel__container">
+                    <input type="text" id='inputValue' class="right-panel__input-text" autofocus>
+                    <button class="right-panel__button" id="inputButton">Insert</button>
+                </div>
+                <div class="right-panel__container">
+                    <input type="text" id='removeValue' class="right-panel__input-text">
+                    <button class="right-panel__button" id="removeButton">Remove</button>
+                </div>
+                <div class="right-panel__container">
+                    <input type="text" id='findValue' class="right-panel__input-text">
+                    <button class="right-panel__button" id="findButton">Find</button>
+                </div>
+                <div class="right-panel__container">
+                <button class="right-panel__button" id="empty">Empty</button>
+                </div>
+                <div class="right-panel__container">
+                <button class="right-panel__button" id="toArray">ToArray</button>
+                </div>
+                <div class="right-panel__container">
+                <button class="right-panel__button" id="toString">ToString</button>
+                </div>
+                <div id="output" class="right-panel__output"></div>
+            </div>
+        </div>
+    <script src="main.js"></script>
+        <script src="listeners.js"></script>
 </body>
 </html>

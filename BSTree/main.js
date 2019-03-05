@@ -1,65 +1,34 @@
 
-var BSTree;
+var BSTree, Entry;
 
 ;(function () {
-
-// function drawElement (e, coords, counter) {
-//     var el = document.createElement('div');
-//     el.classList.add('node');
-//     el.innerText = e.val;
-//     el.style.top = 50 * counter + 'px';
-//     var cont = document.getElementById('mainField');
-//     cont.appendChild(el);
-//     return el;
-// }
-
-    var lastId = 0;
     var FLASH_TIME = 2000;
     var MIDDLE;
+    var SHIFT_VALUE = 35;
 
     function drawElement(e, shiftX, shiftY) {
         var mainField = document.getElementById("mainField");
         if (typeof MIDDLE === 'undefined') {
             MIDDLE = mainField.offsetWidth / 2;
         }
-        let resultShiftX = 50 * shiftX - 20;
-        let resultShiftY = 50 * shiftY;
-        let newNode = document.createElement("div");
-        newNode.setAttribute("class", "node");
-        newNode.style.top = 50 + resultShiftY + 'px';
-        newNode.style.left = MIDDLE + resultShiftX + 'px';
+        var resultShiftX = SHIFT_VALUE * shiftX - 20;
+        var resultShiftY = SHIFT_VALUE * shiftY;
+        var newNode = document.createElement("div");
+        newNode.setAttribute("class", "binary-tree__node");
+        var top = 50 + resultShiftY;
+        var left = MIDDLE + resultShiftX;
+        newNode.style.top = top + 'px';
+        newNode.style.left = left + 'px';
         newNode.innerText = e.val;
         mainField.appendChild(newNode);
         return newNode;
     }
 
-    function drawElementById(e, shiftX, shiftY) {
-        let resultShiftX = 50 * shiftX;
-        let resultShiftY = 50 * shiftY;
-        let newNode = document.createElement("div");
-        newNode.setAttribute("class", "node");
-        newNode.style.top = 50 + resultShiftY + 'px';
-        newNode.style.left = 200 + resultShiftX + 'px';
-        newNode.innerText = e.val;
-        lastId++;
-        newNode.id = 'el' + lastId;
-        document.getElementById("mainField").appendChild(newNode);
-        return lastId;
-    }
-
     function redrawElement(element, shiftX, shiftY) {
-        let resultShiftX = 50 * shiftX - 20;
-        let resultShiftY = 50 * shiftY;
+        var resultShiftX = SHIFT_VALUE * shiftX - 20;
+        var resultShiftY = SHIFT_VALUE * shiftY;
         element.style.top = 50 + resultShiftY + 'px';
         element.style.left = MIDDLE + resultShiftX + 'px';
-    }
-
-    function redrawElementById(id, shiftX, shiftY) {
-        let resultShiftX = 50 * shiftX;
-        let resultShiftY = 50 * shiftY;
-        var element = document.getElementById('el' + id);
-        element.style.top = 50 + resultShiftY + 'px';
-        element.style.left = 200 + resultShiftX + 'px';
     }
 
     function redrawRecursively(e, shiftX, shiftY) {
@@ -74,41 +43,15 @@ var BSTree;
         }
     }
 
-    function redrawRecursivelyById(e, shiftX, shiftY) {
-        e.shiftX = shiftX;
-        e.shiftY = shiftY;
-        redrawElementById(e.id, e.shiftX, e.shiftY);
-        if (e.left !== null) {
-            redrawRecursivelyById(e.left, e.shiftX - 1, e.shiftY + 1);
-        }
-        if (e.right !== null) {
-            redrawRecursivelyById(e.right, e.shiftX + 1, e.shiftY + 1);
-        }
-    }
-
     function flash(e, callback) {
-        e.classList.add('red');
+        e.classList.add('binary-tree__red');
         setTimeout(function () {
-            e.classList.remove('red');
-            typeof callback === 'function' ? callback() : void 0;
-        }, 2000);
-    }
-
-    function flashById(id, callback) {
-        var e = document.getElementById('el' + id);
-        e.classList.add('red');
-        setTimeout(function () {
-            e.classList.remove('red');
+            e.classList.remove('binary-tree__red');
             typeof callback === 'function' ? callback() : void 0;
         }, FLASH_TIME);
     }
 
     function eraseElement(el) {
-        el.remove();
-    }
-
-    function eraseElementById(id) {
-        var el = document.getElementById('el' + id);
         el.remove();
     }
 
@@ -118,7 +61,89 @@ var BSTree;
 
     BSTree = function() {
         this.root = null;
-    }
+    };
+
+    BSTree.prototype.shift = function (gauge, side) {
+        if (gauge === this.root) {
+            return;
+        }
+        if (gauge.val < this.root.val) {
+            if (!this.root.left) {
+                return;
+            }
+            ;(function (e) {//для левой ветки дерева
+                //проход по ветке в порядке возрастания
+                if (e.left) {
+                    arguments.callee(e.left);
+                }
+                if (gauge.val >= e.val) {
+                    if (e === gauge) {
+                        if (side === 'right') {
+                            e.shiftX--;
+                            redrawElement(e.element, e.shiftX, e.shiftY);
+                        }
+                        return;//не проверять элементы которые больше
+                    } else {
+                        e.shiftX--;
+                        redrawElement(e.element, e.shiftX, e.shiftY);
+                    }
+                }
+                if (e.right) {
+                    arguments.callee(e.right);
+                }
+            })(this.root.left);
+        } else {
+            if (!this.root.right) {
+                return;
+            }
+            ;(function (e) {//для правой ветки дерева
+                //проход по ветке в порядке убывания
+                if (e.right) {
+                    arguments.callee(e.right);
+                }
+                if (gauge.val <= e.val) {
+                    if (e === gauge) {
+                        if (side === 'left') {
+                            e.shiftX++;
+                            redrawElement(e.element, e.shiftX, e.shiftY);
+                        }
+                        return;//не проверять элементы которые меньше
+                    } else {
+                        e.shiftX++;
+                        redrawElement(e.element, e.shiftX, e.shiftY);
+                    }
+                }
+                if (e.left) {
+                    arguments.callee(e.left);
+                }
+            }(this.root.right));
+        }
+    };
+    
+    BSTree.prototype.recalcAndRedrawReculsively = function (val) {
+        if (!this.root) {
+            return;
+        }
+        var _this = this;
+        function recalc (e, shiftX, shiftY, side) {
+            e.shiftX = shiftX;
+            e.shiftY = shiftY;
+            _this.shift(e, side);
+            redrawElement(e.element, e.shiftX, e.shiftY);
+            if (e.left !== null) {
+                recalc(e.left, e.shiftX - 1, e.shiftY + 1, 'left');
+            }
+            if (e.right !== null) {
+                recalc(e.right, e.shiftX + 1, e.shiftY + 1, 'right');
+            }
+        }
+        
+        if (val >= this.root.val) {
+            recalc(this.root, 0, 0, 'right');
+        } else if (val < this.root.val) {
+            recalc(this.root, 0, 0, 'left');
+        }
+    };
 
     BSTree.prototype.redrawTree = function () {
         if (this.root === null) {
@@ -128,29 +153,18 @@ var BSTree;
         var mainField = document.getElementById("mainField");
         MIDDLE = mainField.offsetWidth / 2;
         redrawRecursively(this.root, 0, 0);
-    }
+    };
 
     BSTree.prototype.insert = function (val) {
         if (this.root === null) {
             this.root = new Entry(val, null);
+            this.root.tree = this;
             this.root.element = drawElement(this.root, 0, 0);
             this.root.shiftX = 0;
             this.root.shiftY = 0;
             flash(this.root.element);
         } else {
             this.root.insert(val);
-        }
-    };
-
-    BSTree.prototype.insertById = function (val) {
-        if (this.root === null) {
-            this.root = new Entry(val, null);
-            this.root.id = drawElementById(this.root, 0, 0);
-            this.root.shiftX = 0;
-            this.root.shiftY = 0;
-            flashById(this.root.id);
-        } else {
-            this.root.insertById(val);
         }
     };
 
@@ -166,29 +180,22 @@ var BSTree;
         if (this.root === null) {
             return;
         }
-        const tree = this.root.remove(val, true);
+        var tree = this.root.remove(val, true);
         this.root = tree;
         if (tree !== null) {
             tree.parent = null;
         }
-    };
-
-    BSTree.prototype.removeById = function (val) {
-        if (this.root === null) {
-            return;
-        }
-        const tree = this.root.removeById(val, true);
-        this.root = tree;
-        if (tree !== null) {
-            tree.parent = null;
-        }
+        var _this = this;
+        setTimeout(function () {
+            _this.recalcAndRedrawReculsively(val);
+        }, FLASH_TIME);
     };
 
     BSTree.prototype.toString = function () {
         if (this.root === null) {
             return '{}';
         }
-        const arr = [];
+        var arr = [];
         this.root.inOrder(function (val) {
             arr.push(val);
         });
@@ -199,7 +206,7 @@ var BSTree;
         if (this.root === null) {
             return [];
         }
-        const arr = [];
+        var arr = [];
         this.root.inOrder(function (val) {
             arr.push(val);
         });
@@ -215,7 +222,7 @@ var BSTree;
     };
 
     BSTree.prototype.toLinkedList = function () {
-        const lList = new LList;
+        var lList = new LList;
         if (this.root === null) {
             return lList;
         }
@@ -233,7 +240,8 @@ var BSTree;
         }
     };
 
-    function Entry(val, parent) {
+    Entry = function (val, parent) {
+        this.tree = null;
         this.parent = typeof parent === 'undefined' ? null : parent;
         this.val = val;
         this.left = null;
@@ -241,53 +249,32 @@ var BSTree;
         this.element = null;//ссылка на html-элемент в DOM
         this.shiftX = null;
         this.shiftY = null;
-        this.id = null;
-    }
+    };
 
     Entry.prototype.insert = function (val) {
         if (val < this.val) {
             if (this.left === null) {
                 this.left = new Entry(val, this);
+                this.left.tree = this.tree;
                 this.left.shiftX = this.shiftX - 1;
                 this.left.shiftY = this.shiftY + 1;
                 this.left.element = drawElement(this.left, this.left.shiftX, this.left.shiftY);
                 flash(this.left.element);
+                this.tree.shift(this.left, 'left');
             } else {
                 this.left.insert(val);
             }
         } else {
             if (this.right === null) {
                 this.right = new Entry(val, this);
+                this.right.tree = this.tree;
                 this.right.shiftX = this.shiftX + 1;
                 this.right.shiftY = this.shiftY + 1;
                 this.right.element = drawElement(this.right, this.right.shiftX, this.right.shiftY);
                 flash(this.right.element);
+                this.tree.shift(this.right, 'right');
             } else {
                 this.right.insert(val);
-            }
-        }
-    };
-
-    Entry.prototype.insertById = function (val) {
-        if (val < this.val) {
-            if (this.left === null) {
-                this.left = new Entry(val, this);
-                this.left.shiftX = this.shiftX - 1;
-                this.left.shiftY = this.shiftY + 1;
-                this.left.id = drawElementById(this.left, this.left.shiftX, this.left.shiftY);
-                flashById(this.left.id);
-            } else {
-                this.left.insert(val);
-            }
-        } else {
-            if (this.right === null) {
-                this.right = new Entry(val, this);
-                this.right.shiftX = this.shiftX + 1;
-                this.right.shiftY = this.shiftY + 1;
-                this.right.id = drawElementById(this.right, this.right.shiftX, this.right.shiftY);
-                flashById(this.right.id);
-            } else {
-                this.right.insertById(val);
             }
         }
     };
@@ -317,11 +304,10 @@ var BSTree;
                 eraseElement(this.element);
             }
 
-            const newThis = this.right.getMin();
+            var newThis = this.right.getMin();
 
             var removeTasks = function () {
                 newThis.right = this.right.remove(newThis.val);
-                //придумать откуда взять координаты, от родителя или сохраненные для this
                 newThis.shiftX = this.shiftX;
                 newThis.shiftY = this.shiftY;
                 newThis.element = drawElement(newThis, this.shiftX, this.shiftY);
@@ -336,6 +322,8 @@ var BSTree;
 
             if (flashFlag) {
                 setTimeout(removeTasks, FLASH_TIME);
+            } else {
+                removeTasks();
             }
             return newThis;
 
@@ -348,88 +336,8 @@ var BSTree;
                 eraseElement(this.element);
             }
             if (this.left !== null) {
-                if (flashFlag) {
-                    setTimeout(function () {
-                        redrawRecursively(_this.left, _this.shiftX, _this.shiftY);
-                    }, FLASH_TIME)
-                } else {
-                    redrawRecursively(this.left, this.shiftX, this.shiftY);
-                }
                 return this.left;
             } else if (this.right !== null) {
-                if (flashFlag) {
-                    setTimeout(function () {
-                        redrawRecursively(_this.right, _this.shiftX, _this.shiftY);
-                    }, FLASH_TIME);
-                } else {
-                    redrawRecursively(this.right, this.shiftX, this.shiftY);
-                }
-                return this.right;
-            } else {
-                return null;
-            }
-        }
-        return this;
-    };
-
-    Entry.prototype.removeById = function (val, flashFlag) {
-        if (val < this.val) {
-            if (this.left !== null) {
-                this.left = this.left.removeById(val, flashFlag);
-                if (this.left !== null) {
-                    this.left.parent = this;
-                }
-            }
-        } else if (val > this.val) {
-            if (this.right !== null) {
-                this.right = this.right.removeById(val, flashFlag);
-                if (this.right !== null) {
-                    this.right.parent = this;
-                }
-            }
-        } else if (this.left !== null && this.right !== null) {
-            if (flashFlag) {
-                flashById(this.id, function () {
-                    eraseElementById(this.id);
-                });
-            } else {
-                eraseElementById(this.id);
-            }
-
-            const newThis = this.right.getMin();
-            newThis.right = this.right.removeById(newThis.val);
-            //придумать откуда взять координаты, от родителя или сохраненные для this
-            newThis.shiftX = this.shiftX;
-            newThis.shiftY = this.shiftY;
-            newThis.id = drawElementById(newThis, this.shiftX, this.shiftY);
-            if (newThis.right !== null) {
-                newThis.right.parent = newThis;
-            }
-            newThis.left = this.left;
-            if (newThis.left !== null) {
-                newThis.left.parent = newThis;
-            }
-            return newThis;
-
-        } else {
-            if (flashFlag) {
-                var _this = this;
-                flashById(this.id, function () {
-                    console.log(this.id);
-                    eraseElementById(_this.id);
-                });
-                // var _this = this;
-                // ;(function () {
-                //     eraseElementById(_this.id);
-                // })();
-            } else {
-                eraseElementById(this.id);
-            }
-            if (this.left !== null) {
-                redrawRecursivelyById(this.left, this.shiftX, this.shiftY);
-                return this.left;
-            } else if (this.right !== null) {
-                redrawRecursivelyById(this.right, this.shiftX, this.shiftY);
                 return this.right;
             } else {
                 return null;
@@ -458,13 +366,28 @@ var BSTree;
         }
     };
 
-    Entry.prototype.inOrder = function (callback) {
-        if (this.left !== null) {
-            this.left.inOrder(callback);
-        }
-        callback(this.val);
-        if (this.right !== null) {
-            this.right.inOrder(callback);
+    Entry.prototype.inOrder = function (callback, order) {//true - обратный порядок
+        //если колбэк возвращает true, проход по дереву заканчивается
+        if (!order) {
+            if (this.left !== null) {
+                this.left.inOrder(callback);
+            }
+            if (callback(this.val)) {
+                return;
+            }
+            if (this.right !== null) {
+                this.right.inOrder(callback);
+            }
+        } else {
+            if (this.right !== null) {
+                this.right.inOrder(callback);
+            }
+            if (callback(this.val)) {
+                return;
+            }
+            if (this.left !== null) {
+                this.left.inOrder(callback);
+            }
         }
     };
 
@@ -477,57 +400,3 @@ var BSTree;
 
 })();
 
-var tree;
-;(function () {
-    tree = new BSTree;
-
-    addEventListener('resize', function () {
-        tree.redrawTree();
-    });
-
-    function insert() {
-        var input = document.getElementById('inputValue');
-        if (input.value === '') {
-            return;
-        }
-        tree.insert(parseInt(input.value));
-        input.value = '';
-    }
-    document.getElementById('inputButton').addEventListener('click', insert);
-    document.getElementById('inputValue').addEventListener('keyup', function (e) {
-        if (e.keyCode === 13) {
-            insert();
-        }
-    });
-
-    function remove () {
-        var input = document.getElementById('removeValue');
-        if (input.value === '') {
-            return;
-        }
-        tree.remove(parseInt(input.value));
-        input.value = '';
-    }
-    document.getElementById('removeButton').addEventListener('click', remove);
-    document.getElementById('removeValue').addEventListener('keyup', function (e) {
-        if (e.keyCode === 13) {
-            remove();
-        }
-    });
-
-    function find () {
-        var input = document.getElementById('findValue');
-        if (input.value === '') {
-            return;
-        }
-        tree.find(parseInt(input.value));
-        input.value = '';
-    }
-    document.getElementById('findButton').addEventListener('click', remove);
-    document.getElementById('findValue').addEventListener('keyup', function (e) {
-        if (e.keyCode === 13) {
-            find();
-        }
-    });
-
-}());
